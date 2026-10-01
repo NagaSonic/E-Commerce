@@ -13,6 +13,14 @@ import com.example.security_learning.dto.request.ResetPasswordRequest;
 import com.example.security_learning.entity.User;
 import com.example.security_learning.repository.UserRepository;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
+import org.springframework.transaction.annotation.Transactional;
+
+
+
 /**
  * Handles user registration and account password operations.
  */
@@ -106,7 +114,9 @@ public class AuthService {
 
         String resetToken = UUID.randomUUID().toString();
 
-        user.setResetToken(resetToken);
+        String hashedResetToken = hashResetToken(resetToken);
+
+        user.setResetToken(hashedResetToken);
         user.setResetTokenExpiry(
                 LocalDateTime.now()
                         .plusMinutes(PASSWORD_RESET_VALIDITY_MINUTES)
@@ -122,6 +132,7 @@ public class AuthService {
      *
      * @param request reset token and new password
      */
+    @Transactional
     public void resetPassword(ResetPasswordRequest request) {
 
         if (request.getToken() == null
@@ -132,8 +143,12 @@ public class AuthService {
             );
         }
 
+        String hashedResetToken = hashResetToken(
+                request.getToken()
+        );
+
         User user = userRepository
-                .findByResetToken(request.getToken())
+                .findByResetToken(hashedResetToken)
                 .orElseThrow(() ->
                         new RuntimeException("Invalid reset token"));
 
@@ -154,5 +169,41 @@ public class AuthService {
         user.setResetTokenExpiry(null);
 
         userRepository.save(user);
+
+        refreshTokenService.revokeAllRefreshTokensForUser(
+                user.getUsername()
+        );
+    }
+    
+    /**
+     * Creates a SHA-256 hash of a password reset token
+     * before storing it in the database.
+     *
+     * @param token raw reset token
+     * @return SHA-256 hash of the token
+     */
+    private String hashResetToken(String token) {
+
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+
+            byte[] hash = digest.digest(
+                    token.getBytes(StandardCharsets.UTF_8)
+            );
+
+            StringBuilder hex = new StringBuilder();
+
+            for (byte value : hash) {
+                hex.append(String.format("%02x", value));
+            }
+
+            return hex.toString();
+
+        } catch (NoSuchAlgorithmException exception) {
+            throw new IllegalStateException(
+                    "SHA-256 algorithm is not available",
+                    exception
+            );
+        }
     }
 }

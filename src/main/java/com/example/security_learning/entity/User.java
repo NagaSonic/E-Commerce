@@ -7,6 +7,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Column;
 
 /**
  * Represents an application user and their authentication,
@@ -20,10 +21,18 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Authentication fields
+ // Authentication fields
+
+    @Column(nullable = false, unique = true, length = 50)
     private String username;
+
+    @Column(nullable = false, length = 100)
     private String password;
+
+    @Column(nullable = false, length = 20)
     private String role;
+
+    @Column(nullable = false, length = 500)
     private String permissions;
 
     // Customer profile fields

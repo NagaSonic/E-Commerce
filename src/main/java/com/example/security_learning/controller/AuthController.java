@@ -56,9 +56,9 @@ public class AuthController {
     /**
      * Registers a new user with an encoded password and customer profile details.
      *
-     * <p>New registrations are always assigned the default USER role and
+     * New registrations are always assigned the default USER role and
      * USER_READ permission. Authorization values are controlled by the server
-     * and are not accepted from the client.</p>
+     * and are not accepted from the client.
      *
      * @param request registration details
      * @return registration success response
@@ -161,9 +161,11 @@ public class AuthController {
     }
 
     /**
-     * Creates a temporary password reset token for the requested user.
+     * Initiates the password reset process for the requested username.
      *
-     * <p>The token is valid for 15 minutes.</p>
+     * <p>If the account exists, a temporary reset token is generated
+     * and remains valid for 15 minutes. The response is kept generic
+     * when the account does not exist to reduce username enumeration.</p>
      *
      * @param request username requesting password recovery
      * @return password reset response
@@ -174,11 +176,14 @@ public class AuthController {
 
         String resetToken = authService.forgotPassword(request);
 
-        return new AuthResponse(
-                "Password reset token: " + resetToken
-        );
-    }
+        if (resetToken == null) {
+            return new AuthResponse(
+                    "If the account exists, a password reset token has been generated.");
+        }
 
+        return new AuthResponse(
+                "Password reset token: " + resetToken);
+    }
     /**
      * Resets a user's password using a valid, non-expired reset token.
      *

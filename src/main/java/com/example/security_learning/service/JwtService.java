@@ -18,7 +18,6 @@ import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.stereotype.Service;
-
 import com.example.security_learning.entity.User;
 import com.example.security_learning.repository.UserRepository;
 
@@ -42,8 +41,22 @@ public class JwtService {
 
         this.userRepository = userRepository;
 
+        if (secret == null || secret.isBlank()) {
+            throw new IllegalStateException(
+                    "JWT_SECRET must be configured"
+            );
+        }
+
+        byte[] secretBytes = secret.getBytes(StandardCharsets.UTF_8);
+
+        if (secretBytes.length < 32) {
+            throw new IllegalStateException(
+                    "JWT_SECRET must be at least 32 bytes long"
+            );
+        }
+
         SecretKey secretKey = new SecretKeySpec(
-                secret.getBytes(StandardCharsets.UTF_8),
+                secretBytes,
                 "HmacSHA256"
         );
 

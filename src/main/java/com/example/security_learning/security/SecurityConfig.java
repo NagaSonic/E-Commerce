@@ -356,11 +356,24 @@ public class SecurityConfig {
      */
     @Bean
     public RememberMeServices rememberMeServices(
-            CustomUserDetailsService customUserDetailsService) {
+            CustomUserDetailsService customUserDetailsService,
+            @Value("${remember-me.key}") String rememberMeKey) {
+
+        if (rememberMeKey == null || rememberMeKey.isBlank()) {
+            throw new IllegalStateException(
+                    "REMEMBER_ME_KEY must be configured"
+            );
+        }
+
+        if (rememberMeKey.length() < 32) {
+            throw new IllegalStateException(
+                    "REMEMBER_ME_KEY must be at least 32 characters long"
+            );
+        }
 
         TokenBasedRememberMeServices rememberMe =
                 new TokenBasedRememberMeServices(
-                    "my-remember-me-key",
+                    rememberMeKey,
                     customUserDetailsService
                 );
 
@@ -374,7 +387,9 @@ public class SecurityConfig {
      * authentication tokens.
      */
     @Bean
-    public RememberMeAuthenticationProvider rememberMeAuthenticationProvider() {
-        return new RememberMeAuthenticationProvider("my-remember-me-key");
+    public RememberMeAuthenticationProvider rememberMeAuthenticationProvider(
+            @Value("${remember-me.key}") String rememberMeKey) {
+
+        return new RememberMeAuthenticationProvider(rememberMeKey);
     }
 }
