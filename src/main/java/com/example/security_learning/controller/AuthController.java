@@ -27,8 +27,10 @@ import com.example.security_learning.service.AuthService;
 /**
  * Handles authentication and account-related operations.
  *
- * <p>This controller is responsible for user registration, session-based
- * login, password changes, and password reset operations.</p>
+ * <p>
+ * This controller is responsible for user registration, session-based
+ * login, password changes, and password reset operations.
+ * </p>
  */
 @RestController
 public class AuthController {
@@ -56,9 +58,11 @@ public class AuthController {
     /**
      * Registers a new user with an encoded password and customer profile details.
      *
+     * <p>
      * New registrations are always assigned the default USER role and
      * USER_READ permission. Authorization values are controlled by the server
      * and are not accepted from the client.
+     * </p>
      *
      * @param request registration details
      * @return registration success response
@@ -77,9 +81,11 @@ public class AuthController {
     /**
      * Authenticates a user and establishes a session-based security context.
      *
-     * <p>The configured session authentication strategy is applied before
+     * <p>
+     * The configured session authentication strategy is applied before
      * storing the authenticated user in the security context. Remember-me
-     * authentication is enabled when requested by the client.</p>
+     * authentication is enabled when requested by the client.
+     * </p>
      *
      * @param request login credentials
      * @param httpRequest current HTTP request
@@ -137,9 +143,11 @@ public class AuthController {
     /**
      * Changes the authenticated user's password.
      *
-     * <p>The current password must be valid before the new password is saved.
+     * <p>
+     * The current password must be valid before the new password is saved.
      * All refresh tokens belonging to the user are revoked after a successful
-     * password change.</p>
+     * password change.
+     * </p>
      *
      * @param request current and new password details
      * @param authentication authenticated user
@@ -163,9 +171,11 @@ public class AuthController {
     /**
      * Initiates the password reset process for the requested username.
      *
-     * <p>If the account exists, a temporary reset token is generated
+     * <p>
+     * If the account exists, a temporary reset token is generated
      * and remains valid for 15 minutes. The response is kept generic
-     * when the account does not exist to reduce username enumeration.</p>
+     * when the account does not exist to reduce username enumeration.
+     * </p>
      *
      * @param request username requesting password recovery
      * @return password reset response
@@ -177,13 +187,17 @@ public class AuthController {
         String resetToken = authService.forgotPassword(request);
 
         if (resetToken == null) {
+
             return new AuthResponse(
-                    "If the account exists, a password reset token has been generated.");
+                    "If the account exists, a password reset token has been generated."
+            );
         }
 
         return new AuthResponse(
-                "Password reset token: " + resetToken);
+                "Password reset token: " + resetToken
+        );
     }
+
     /**
      * Resets a user's password using a valid, non-expired reset token.
      *

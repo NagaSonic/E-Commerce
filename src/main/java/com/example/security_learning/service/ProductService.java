@@ -1,3 +1,4 @@
+
 package com.example.security_learning.service;
 
 import java.util.List;
@@ -8,6 +9,7 @@ import com.example.security_learning.dto.request.ProductRequest;
 import com.example.security_learning.dto.response.ProductResponse;
 import com.example.security_learning.entity.Category;
 import com.example.security_learning.entity.Product;
+import com.example.security_learning.mapper.ProductMapper;
 import com.example.security_learning.repository.CategoryRepository;
 import com.example.security_learning.repository.ProductRepository;
 
@@ -38,7 +40,6 @@ public class ProductService {
                         new RuntimeException("Category not found"));
 
         Product product = new Product();
-
         product.setName(request.getName());
         product.setDescription(request.getDescription());
         product.setPrice(request.getPrice());
@@ -46,7 +47,7 @@ public class ProductService {
 
         Product savedProduct = productRepository.save(product);
 
-        return toResponse(savedProduct);
+        return ProductMapper.toResponse(savedProduct);
     }
 
     /**
@@ -56,7 +57,7 @@ public class ProductService {
 
         return productRepository.findAll()
                 .stream()
-                .map(this::toResponse)
+                .map(ProductMapper::toResponse)
                 .toList();
     }
 
@@ -69,7 +70,7 @@ public class ProductService {
                 .orElseThrow(() ->
                         new RuntimeException("Product not found"));
 
-        return toResponse(product);
+        return ProductMapper.toResponse(product);
     }
 
     /**
@@ -95,7 +96,7 @@ public class ProductService {
         Product updatedProduct =
                 productRepository.save(existingProduct);
 
-        return toResponse(updatedProduct);
+        return ProductMapper.toResponse(updatedProduct);
     }
 
     /**
@@ -109,19 +110,5 @@ public class ProductService {
 
         productRepository.delete(product);
     }
-
-    /**
-     * Converts a Product entity into a ProductResponse DTO.
-     */
-    private ProductResponse toResponse(Product product) {
-
-        return new ProductResponse(
-                product.getId(),
-                product.getName(),
-                product.getDescription(),
-                product.getPrice(),
-                product.getCategory().getId(),
-                product.getCategory().getName()
-        );
-    }
 }
+

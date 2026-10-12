@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import com.example.security_learning.dto.request.CategoryRequest;
 import com.example.security_learning.dto.response.CategoryResponse;
 import com.example.security_learning.entity.Category;
+import com.example.security_learning.mapper.CategoryMapper;
 import com.example.security_learning.repository.CategoryRepository;
 
 /**
@@ -25,25 +26,22 @@ public class CategoryService {
      * Creates a new product category.
      */
     public CategoryResponse createCategory(CategoryRequest request) {
-
-        Category category = new Category();
-
-        category.setName(request.getName());
-        category.setDescription(request.getDescription());
+        Category category = CategoryMapper.toEntity(
+                request.getName(),
+                request.getDescription()
+        );
 
         Category savedCategory = categoryRepository.save(category);
-
-        return toResponse(savedCategory);
+        return CategoryMapper.toResponse(savedCategory);
     }
 
     /**
      * Returns all available product categories.
      */
     public List<CategoryResponse> getAllCategories() {
-
         return categoryRepository.findAll()
                 .stream()
-                .map(this::toResponse)
+                .map(CategoryMapper::toResponse)
                 .toList();
     }
 
@@ -51,12 +49,11 @@ public class CategoryService {
      * Returns a category by its ID.
      */
     public CategoryResponse getCategoryById(Long id) {
-
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() ->
                         new RuntimeException("Category not found"));
 
-        return toResponse(category);
+        return CategoryMapper.toResponse(category);
     }
 
     /**
@@ -76,30 +73,18 @@ public class CategoryService {
         Category updatedCategory =
                 categoryRepository.save(existingCategory);
 
-        return toResponse(updatedCategory);
+        return CategoryMapper.toResponse(updatedCategory);
     }
 
     /**
      * Deletes an existing category.
      */
     public void deleteCategory(Long id) {
-
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() ->
                         new RuntimeException("Category not found"));
 
         categoryRepository.delete(category);
     }
-
-    /**
-     * Converts a Category entity into a CategoryResponse DTO.
-     */
-    private CategoryResponse toResponse(Category category) {
-
-        return new CategoryResponse(
-                category.getId(),
-                category.getName(),
-                category.getDescription()
-        );
-    }
 }
+

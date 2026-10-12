@@ -19,26 +19,31 @@ public class GlobalExceptionHandler {
     /**
      * Handles validation errors from @Valid request bodies.
      */
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleValidationException(
-            MethodArgumentNotValidException exception) {
+	@ExceptionHandler(BusinessException.class)
+	public ResponseEntity<Map<String, Object>> handleBusinessException(
+	        BusinessException exception) {
 
-        Map<String, String> errors = new HashMap<>();
+	    Map<String, Object> response = new HashMap<>();
+	    response.put("error", "Business rule violation");
+	    response.put("message", exception.getMessage());
 
-        exception.getBindingResult()
-                .getFieldErrors()
-                .forEach(error ->
-                        errors.put(
-                                error.getField(),
-                                error.getDefaultMessage()
-                        )
-                );
+	    return ResponseEntity
+	            .status(HttpStatus.BAD_REQUEST)
+	            .body(response);
+	}
+    
+    
+
+    /**
+     * Handles expected business-rule errors.
+     */
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<Map<String, Object>> handleRuntimeException(
+            RuntimeException exception) {
 
         Map<String, Object> response = new HashMap<>();
-
-        response.put("error", "Validation failed");
-        response.put("message", "Please correct the invalid fields");
-        response.put("fields", errors);
+        response.put("error", "Business rule violation");
+        response.put("message", exception.getMessage());
 
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)

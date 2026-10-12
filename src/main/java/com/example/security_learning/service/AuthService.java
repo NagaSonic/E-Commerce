@@ -74,6 +74,7 @@ public class AuthService {
      * @param username authenticated username
      * @param request current and new password details
      */
+    @Transactional
     public void changePassword(
             String username,
             ChangePasswordRequest request) {

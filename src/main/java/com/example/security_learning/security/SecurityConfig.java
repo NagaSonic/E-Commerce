@@ -2,6 +2,7 @@ package com.example.security_learning.security;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Arrays;
 
 import javax.crypto.spec.SecretKeySpec;
 
@@ -108,6 +109,8 @@ public class SecurityConfig {
                 // Permission-based authorization
                 .requestMatchers("/users/read")
                 .hasAuthority("USER_READ")
+                
+                
 
                 // Product authorization
                 .requestMatchers(HttpMethod.GET, "/products/**")
@@ -134,6 +137,18 @@ public class SecurityConfig {
 
                 .requestMatchers(HttpMethod.DELETE, "/categories/**")
                 .hasRole("ADMIN")
+                
+                .requestMatchers(HttpMethod.GET, "/inventory/**").hasAnyRole("USER", "ADMIN")
+                .requestMatchers(HttpMethod.POST, "/inventory/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/inventory/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/inventory/**").hasRole("ADMIN")
+                
+                .requestMatchers("/cart/**").authenticated()
+                
+                .requestMatchers(HttpMethod.GET, "/orders/**").authenticated()
+                .requestMatchers(HttpMethod.POST, "/orders/**").authenticated()
+                .requestMatchers(HttpMethod.PUT, "/orders/*/status").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/payments/**").authenticated()
 
                 .anyRequest()
                 .authenticated()
@@ -262,14 +277,16 @@ public class SecurityConfig {
      * Configures allowed cross-origin requests for the application.
      */
     @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
+    public CorsConfigurationSource corsConfigurationSource(
+            @Value("${cors.allowed-origins}") String allowedOrigins) {
+
         CorsConfiguration configuration = new CorsConfiguration();
 
         configuration.setAllowedOrigins(
-            List.of(
-                "http://localhost:3000",
-                "http://localhost:5173"
-            )
+            Arrays.stream(allowedOrigins.split(","))
+                    .map(String::trim)
+                    .filter(origin -> !origin.isBlank())
+                    .toList()
         );
 
         configuration.setAllowedMethods(
@@ -284,7 +301,6 @@ public class SecurityConfig {
 
         configuration.setAllowedHeaders(List.of("*"));
 
-        // Required because session authentication uses cookies.
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source =
@@ -294,7 +310,6 @@ public class SecurityConfig {
 
         return source;
     }
-
     /**
      * Creates the JWT decoder used to validate HMAC-SHA256 signed tokens.
      */
